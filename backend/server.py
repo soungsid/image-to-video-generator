@@ -43,10 +43,53 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
-# Add your routes to the router instead of directly to app
+
+# =============================================================================
+# VIDEO GENERATION MODELS
+# =============================================================================
+
+class VideoGenerationRequest(BaseModel):
+    """Requête de génération de vidéo"""
+    timestamp: Timestamp
+    title: str = "video"
+    background_music: Optional[str] = None
+    weather_effect: Optional[str] = None  # 'rain', 'snow', 'fire' ou None
+    use_crossfade: bool = True
+
+
+class VideoGenerationResponse(BaseModel):
+    """Réponse de génération de vidéo"""
+    success: bool
+    video_path: Optional[str] = None
+    duration_seconds: Optional[float] = None
+    clips_count: int = 0
+    message: str
+
+
+# =============================================================================
+# VIDEO SERVICE INSTANCE
+# =============================================================================
+
+# Initialiser le service de génération vidéo
+video_service = VideoGenerationService()
+logger.info("Service de génération vidéo initialisé")
+
+
+# =============================================================================
+# ROUTES
+# =============================================================================
+
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {
+        "message": "API de Génération Vidéo",
+        "version": "1.0.0",
+        "endpoints": {
+            "generate_video": "/api/video/generate",
+            "download_video": "/api/video/download/{filename}",
+            "available_effects": "/api/video/effects"
+        }
+    }
 
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
