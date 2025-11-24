@@ -90,7 +90,7 @@ class TransitionManager:
                 
                 return np.array(img_cropped)
         
-        return VideoClip(make_frame, duration=duration).set_fps(clip.fps)
+        return VideoClip(make_frame, duration=duration).with_fps(clip.fps)
     
     def apply_pan(self, clip: VideoClip, direction: str = 'random') -> VideoClip:
         """Applique un mouvement panoramique
@@ -138,7 +138,7 @@ class TransitionManager:
             
             return np.array(cropped)
         
-        return VideoClip(make_frame, duration=duration).set_fps(clip.fps)
+        return VideoClip(make_frame, duration=duration).with_fps(clip.fps)
     
     def apply_all_transitions(self, clip: VideoClip, apply_ken_burns: bool = True, 
                             apply_pan: bool = True) -> VideoClip:
