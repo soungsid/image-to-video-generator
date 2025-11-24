@@ -45,7 +45,6 @@ class TransitionManager:
             zoom_in: Si True, zoom avant, sinon zoom arrière
         """
         duration = clip.duration
-        original_size = clip.size
         
         if zoom_in:
             # Zoom avant (1.0 -> zoom_factor)
