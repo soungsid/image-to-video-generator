@@ -97,7 +97,7 @@ class VideoGenerationService:
             clip = ImageClip(timestamp_item.image_path, duration=duration)
             
             # Redimensionner à la résolution cible
-            clip = clip.resize(self.config.resolution)
+            clip = clip.resized(self.config.resolution)
             
             logger.info(f"Clip créé: {timestamp_item.text} - {duration:.2f}s")
             return clip
