@@ -99,6 +99,9 @@ class VideoGenerationService:
             # Redimensionner à la résolution cible
             clip = clip.resized(self.config.resolution)
             
+            # Définir le FPS
+            clip = clip.with_fps(self.config.fps)
+            
             logger.info(f"Clip créé: {timestamp_item.text} - {duration:.2f}s")
             return clip
             
