@@ -15,7 +15,15 @@ from moviepy import (
 from .video_config import VideoConfig, DEFAULT_CONFIG
 from .transitions import TransitionManager, create_crossfade_transition
 from .video_effects import EffectManager
-from ...models.timestamp_models import Timestamp, TimestampItem
+
+# Import absolu pour éviter les problèmes d'import relatif
+import sys
+from pathlib import Path
+backend_dir = Path(__file__).parent.parent.parent
+if str(backend_dir) not in sys.path:
+    sys.path.insert(0, str(backend_dir))
+
+from models.timestamp_models import Timestamp, TimestampItem
 
 logger = logging.getLogger(__name__)
 
