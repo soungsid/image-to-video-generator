@@ -25,13 +25,13 @@ class TransitionManager:
     def apply_fade_in(self, clip: VideoClip) -> VideoClip:
         """Applique un fade-in au début du clip"""
         if clip.duration > self.fade_duration:
-            return fadein(clip, self.fade_duration)
+            return clip.fadein(self.fade_duration)
         return clip
     
     def apply_fade_out(self, clip: VideoClip) -> VideoClip:
         """Applique un fade-out à la fin du clip"""
         if clip.duration > self.fade_duration:
-            return fadeout(clip, self.fade_duration)
+            return clip.fadeout(self.fade_duration)
         return clip
     
     def apply_ken_burns(self, clip: VideoClip, zoom_in: bool = True) -> VideoClip:
