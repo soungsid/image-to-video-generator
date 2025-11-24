@@ -1,6 +1,6 @@
 """Effets visuels animés pour les vidéos (pluie, neige, feu)"""
 import numpy as np
-from moviepy.editor import VideoClip
+from moviepy import VideoClip
 import random
 import logging
 
