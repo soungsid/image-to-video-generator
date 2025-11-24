@@ -24,19 +24,28 @@ class TransitionManager:
     
     def apply_fade_in(self, clip: VideoClip) -> VideoClip:
         """Applique un fade-in au début du clip"""
+        # Pour MoviePy 2.x, on applique un fade simple via composition
         if clip.duration > self.fade_duration:
-            return clip.with_effects([lambda c: c.with_opacity(
-                lambda t: min(1.0, t / self.fade_duration) if t < self.fade_duration else 1.0
-            )])
+            # Créer un clip avec opacité variable
+            def make_frame(t):
+                frame = clip.get_frame(t)
+                opacity = min(1.0, t / self.fade_duration) if t < self.fade_duration else 1.0
+                # Appliquer l'opacité au frame
+                return (frame * opacity).astype(frame.dtype)
+            
+            return VideoClip(make_frame, duration=clip.duration).with_fps(clip.fps)
         return clip
     
     def apply_fade_out(self, clip: VideoClip) -> VideoClip:
         """Applique un fade-out à la fin du clip"""
         if clip.duration > self.fade_duration:
             fade_start = clip.duration - self.fade_duration
-            return clip.with_effects([lambda c: c.with_opacity(
-                lambda t: 1.0 if t < fade_start else max(0.0, (clip.duration - t) / self.fade_duration)
-            )])
+            def make_frame(t):
+                frame = clip.get_frame(t)
+                opacity = 1.0 if t < fade_start else max(0.0, (clip.duration - t) / self.fade_duration)
+                return (frame * opacity).astype(frame.dtype)
+            
+            return VideoClip(make_frame, duration=clip.duration).with_fps(clip.fps)
         return clip
     
     def apply_ken_burns(self, clip: VideoClip, zoom_in: bool = True) -> VideoClip:
@@ -154,9 +163,24 @@ class TransitionManager:
             apply_ken_burns: Appliquer l'effet Ken Burns
             apply_pan: Appliquer l'effet pan
         """
-        # Pour l'instant, désactivons les effets complexes pour MoviePy 2.x
-        # TODO: Implémenter avec la nouvelle API MoviePy
-        logger.info("Transitions basiques appliquées (ken burns et pan temporairement désactivés)")
+        logger.info(f"Application des transitions: ken_burns={apply_ken_burns}, pan={apply_pan}")
+        
+        # Appliquer fade-in et fade-out de base
+        clip = self.apply_fade_in(clip)
+        clip = self.apply_fade_out(clip)
+        
+        # Appliquer Ken Burns si activé
+        if apply_ken_burns and clip.duration > 1.0:
+            # Alterner entre zoom avant et zoom arrière pour varier
+            zoom_in = random.choice([True, False])
+            clip = self.apply_ken_burns(clip, zoom_in=zoom_in)
+            logger.info(f"Effet Ken Burns appliqué (zoom_in={zoom_in})")
+        
+        # Appliquer pan si activé
+        if apply_pan and clip.duration > 1.0:
+            clip = self.apply_pan(clip, direction='random')
+            logger.info("Effet pan appliqué")
+        
         return clip
 
 
@@ -172,14 +196,10 @@ def create_crossfade_transition(clip1: VideoClip, clip2: VideoClip,
     Returns:
         Clip composite avec transition
     """
-    # Appliquer fade out au clip1
-    clip1_fading = clip1.crossfadeout(duration)
+    # Pour MoviePy 2.x, crossfade temporairement désactivé
+    # TODO: Implémenter avec la nouvelle API
+    logger.info("Transition crossfade temporairement désactivée pour MoviePy 2.x")
     
-    # Appliquer fade in au clip2
-    clip2_fading = clip2.crossfadein(duration)
-    
-    # Le clip2 commence quand clip1 se termine moins la durée du crossfade
-    clip2_fading = clip2_fading.set_start(clip1.duration - duration)
-    
-    # Composer les deux clips
-    return CompositeVideoClip([clip1_fading, clip2_fading])
+    # Retourner simplement la concaténation des clips
+    from moviepy import concatenate_videoclips
+    return concatenate_videoclips([clip1, clip2], method="compose")

@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 
 # Configuration
-TEST_IMAGES_DIR = "/app/ressources/test_images"
+TEST_IMAGES_DIR = "./ressources/test_images"
 os.makedirs(TEST_IMAGES_DIR, exist_ok=True)
 
 
@@ -214,7 +214,7 @@ def main():
     result1 = test_video_generation_api()
     
     # Test 2: Avec effets météo (optionnel, commenter si trop long)
-    # test_with_weather_effects()
+    test_with_weather_effects()
     
     print("\n" + "="*70)
     print("✅ TESTS TERMINÉS")

@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Backend FastAPI
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: image-to-video-generator
+    restart: always
+    ports:
+      - "8002:8001"
+    environment:
+      - MONGO_USERNAME=${MONGO_USERNAME}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_CLUSTER=${MONGO_CLUSTER}
+      - MONGO_APP_NAME=${MONGO_APP_NAME}
+      - DB_NAME=${DB_NAME}
+    volumes:
+      - ${DATA_WORKSPACE:-/data/workspace-stoicisme-video-generator/ressources}:/app/ressources
+    networks:
+      - youtube-manager-network
+      - traefik_network
+
+    labels:
+      - "traefik.http.services.STOICISME_BACKEND_DOMAINE.loadbalancer.server.port=8001"
+      - traefik.enable=true
+      - traefik.http.routers.STOICISME_BACKEND_DOMAINE.rule=Host(`${STOICISME_BACKEND_DOMAINE}`)
+      - traefik.http.routers.STOICISME_BACKEND_DOMAINE.tls=false
+      - traefik.http.routers.STOICISME_BACKEND_DOMAINE.tls.certresolver=myhttpchallenge
+      - "traefik.http.middlewares.STOICISME_BACKEND_DOMAINE-https-headers.headers.customRequestHeaders.X-Forwarded-Proto=https"
+    healthcheck:
+      test: curl --fail http://localhost:8001/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+
+networks:
+  youtube-manager-network:
+    driver: bridge
+  traefik_network:
+    external: true # Indiquer que ce réseau est externe pour Traefik
