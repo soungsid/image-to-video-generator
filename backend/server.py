@@ -70,6 +70,13 @@ class VideoGenerationResponse(BaseModel):
 # VIDEO SERVICE INSTANCE
 # =============================================================================
 
+# Configure logging first
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 # Initialiser le service de génération vidéo
 video_service = VideoGenerationService()
 logger.info("Service de génération vidéo initialisé")
