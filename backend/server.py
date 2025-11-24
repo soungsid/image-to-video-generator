@@ -115,6 +115,149 @@ async def get_status_checks():
     
     return status_checks
 
+
+# =============================================================================
+# VIDEO GENERATION ROUTES
+# =============================================================================
+
+@api_router.post("/video/generate", response_model=VideoGenerationResponse)
+async def generate_video(request: VideoGenerationRequest):
+    """
+    Génère une vidéo à partir d'un objet Timestamp
+    
+    Args:
+        request: Données de la requête contenant timestamp, titre, etc.
+    
+    Returns:
+        Informations sur la vidéo générée
+    
+    Example:
+        ```json
+        {
+            "timestamp": {
+                "id": "abc123",
+                "idea_id": "idea456",
+                "timestamps": [
+                    {
+                        "text": "Scène 1",
+                        "image_path": "/app/ressources/images/image1.jpg",
+                        "start_time_ms": 0,
+                        "end_time_ms": 3000
+                    }
+                ],
+                "total_duration_ms": 3000
+            },
+            "title": "Ma Vidéo",
+            "weather_effect": "snow",
+            "background_music": "/app/ressources/music/track.mp3"
+        }
+        ```
+    """
+    try:
+        logger.info(f"Requête de génération vidéo: {request.title}")
+        
+        # Générer la vidéo (synchrone)
+        result = video_service.generate_video(
+            timestamp=request.timestamp,
+            title=request.title,
+            background_music=request.background_music,
+            weather_effect=request.weather_effect,
+            use_crossfade=request.use_crossfade
+        )
+        
+        return VideoGenerationResponse(**result)
+        
+    except Exception as e:
+        logger.error(f"Erreur génération vidéo: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erreur génération vidéo: {str(e)}")
+
+
+@api_router.get("/video/download/{video_id}")
+async def download_video(video_id: str):
+    """
+    Télécharge une vidéo générée
+    
+    Args:
+        video_id: ID ou nom du fichier vidéo
+    
+    Returns:
+        Fichier vidéo
+    """
+    try:
+        # Construire le chemin du fichier
+        resources_dir = os.getenv("RESOURCES_DIR", "/app/ressources")
+        videos_dir = os.path.join(resources_dir, "videos")
+        
+        # Rechercher le fichier (recherche récursive)
+        from pathlib import Path
+        video_files = list(Path(videos_dir).rglob(f"*{video_id}*.mp4"))
+        
+        if not video_files:
+            raise HTTPException(status_code=404, detail=f"Vidéo {video_id} non trouvée")
+        
+        video_path = str(video_files[0])
+        
+        if not os.path.exists(video_path):
+            raise HTTPException(status_code=404, detail="Fichier vidéo introuvable")
+        
+        # Retourner le fichier
+        return FileResponse(
+            video_path,
+            media_type="video/mp4",
+            filename=os.path.basename(video_path)
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Erreur téléchargement vidéo: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur téléchargement: {str(e)}")
+
+
+@api_router.get("/video/effects")
+async def get_available_effects():
+    """
+    Liste les effets météo disponibles
+    
+    Returns:
+        Liste des effets disponibles
+    """
+    return {
+        "available_effects": ["rain", "snow", "fire"],
+        "descriptions": {
+            "rain": "Effet de pluie tombante",
+            "snow": "Effet de neige flottante",
+            "fire": "Effet de flammes/particules chaudes"
+        },
+        "usage": "Utiliser le paramètre 'weather_effect' dans la requête de génération"
+    }
+
+
+@api_router.get("/video/config")
+async def get_video_config():
+    """
+    Récupère la configuration actuelle du service vidéo
+    
+    Returns:
+        Configuration du service
+    """
+    config = video_service.config
+    return {
+        "resolution": config.resolution,
+        "fps": config.fps,
+        "codec": config.codec,
+        "fade_duration": config.fade_duration,
+        "crossfade_duration": config.crossfade_duration,
+        "ken_burns_enabled": config.ken_burns_enabled,
+        "ken_burns_zoom_factor": config.ken_burns_zoom_factor,
+        "pan_enabled": config.pan_enabled,
+        "pan_distance": config.pan_distance,
+        "weather_effects_enabled": config.weather_effects_enabled,
+        "weather_effect_intensity": config.weather_effect_intensity,
+        "background_music_volume": config.background_music_volume
+    }
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
