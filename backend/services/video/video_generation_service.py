@@ -5,7 +5,7 @@ from typing import Optional, List
 from pathlib import Path
 from slugify import slugify
 
-from moviepy.editor import (
+from moviepy import (
     ImageClip, 
     concatenate_videoclips, 
     CompositeVideoClip,
