@@ -272,28 +272,9 @@ class VideoGenerationService:
             
             logger.info(f"Clips créés: {len(clips)}")
             
-            # Concaténer les clips
-            if use_crossfade and len(clips) > 1:
-                # Utiliser crossfade entre les clips
-                logger.info("Application des crossfades...")
-                final_clips = [clips[0]]
-                
-                for i in range(1, len(clips)):
-                    # Créer la transition crossfade
-                    transition = create_crossfade_transition(
-                        final_clips[-1],
-                        clips[i],
-                        self.config.crossfade_duration
-                    )
-                    # Remplacer les deux derniers clips par la transition
-                    final_clips[-1] = transition
-                    if i < len(clips) - 1:
-                        final_clips.append(clips[i])
-                
-                final_video = concatenate_videoclips(final_clips, method="compose")
-            else:
-                # Concaténation simple
-                final_video = concatenate_videoclips(clips, method="compose")
+            # Concaténer les clips (crossfade désactivé temporairement pour MoviePy 2.x)
+            logger.info("Concaténation des clips...")
+            final_video = concatenate_videoclips(clips, method="compose")
             
             logger.info(f"Vidéo concaténée: {final_video.duration:.2f}s")
             
