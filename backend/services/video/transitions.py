@@ -1,10 +1,7 @@
 """Gestion des transitions pour les clips vidéo"""
 import random
 from typing import Tuple
-from moviepy.editor import VideoClip, CompositeVideoClip
-from moviepy.video.fx.fadein import fadein
-from moviepy.video.fx.fadeout import fadeout
-from moviepy.video.fx.resize import resize
+from moviepy import VideoClip, CompositeVideoClip
 import numpy as np
 import logging
 
